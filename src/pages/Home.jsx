@@ -11,11 +11,12 @@ import { get } from "react-hook-form"
 import axios from "../axios"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchPosts, fetchTags } from "../redux/slices/post"
+import { selectIsAuth } from "../redux/slices/auth"
 
 export const Home = () => {
+    const isAuth = useSelector(selectIsAuth)
     const dispatch = useDispatch()
     const {posts,tags}=useSelector(state=>state.posts)
-
     const isPostLoading=posts.stats==='loading'
     const isTagsLoading=tags.stats==='loading'
     useEffect(() => {
@@ -44,7 +45,7 @@ export const Home = () => {
                         viewsCount={obj.viewsCount}
                         commentsCount={3}
                         tags={obj.tags?obj.tags:["react", "fun", "typescript"]}
-                        isEditable
+                        isEditable={isAuth}
                     />
                        )
                     ))}
@@ -55,14 +56,14 @@ export const Home = () => {
                         items={[
                             {
                                 user: {
-                                    fullName: "Вася Пупкин",
+                                    fullName: "Viktor Perss",
                                     avatarUrl: "https://mui.com/static/images/avatar/1.jpg",
                                 },
-                                text: "Это тестовый комментарий",
+                                text: "Test comment",
                             },
                             {
                                 user: {
-                                    fullName: "Иван Иванов",
+                                    fullName: "Ivan Branch",
                                     avatarUrl: "https://mui.com/static/images/avatar/2.jpg",
                                 },
                                 text: "When displaying three lines or more, the avatar is not aligned at the top. You should set the prop to align the avatar at the top",
