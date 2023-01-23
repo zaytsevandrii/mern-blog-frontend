@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import TextField from "@mui/material/TextField"
 import Paper from "@mui/material/Paper"
 import Button from "@mui/material/Button"
@@ -7,9 +7,10 @@ import axios from "../../axios"
 import "easymde/dist/easymde.min.css"
 import styles from "./AddPost.module.scss"
 import { useRef } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 
 export const AddPost = () => {
+    const {id} = useParams()
   const navigate = useNavigate()
     const [imageUrl, setImageUrl] = useState("")
     const [value, setValue] = React.useState("")
@@ -18,6 +19,7 @@ export const AddPost = () => {
     const [isLoading, setLoading] = useState(false)
 
     const inputRef = useRef()
+    const isEditing=Boolean(id)
 
     const handleChangeFile = async (event) => {
         try {
@@ -49,16 +51,34 @@ export const AddPost = () => {
                 tags,
                 text:value
             }
-            const { data } = await axios.post("/posts", fields)
+            const { data } = isEditing
+            ? await axios.patch(`posts/${id}`,fields)
+            : await axios.post("/posts", fields)
 
-            const id = data._id
-            navigate(`/posts/${id}`)
+            const _id = isEditing?id:data._id
+            navigate(`/posts/${_id}`)
 
         } catch (err) {
           console.warn(err)
           alert('Mistake with create article')
         }
     }
+
+    useEffect(()=>{
+        if(id){
+            axios.get(`/posts/${id}`).then(({data})=>{
+                setTitle(data.title)
+                setValue(data.text)
+                setImageUrl(data.imageUrl)
+                setTags(data.tags.join(','))
+            }).catch(err=>{
+                console.warn(err)
+                alert('Mistake with get article')
+            })
+        }
+    },[])
+
+
     const options = React.useMemo(
         () => ({
             spellChecker: false,
@@ -109,7 +129,7 @@ export const AddPost = () => {
             <SimpleMDE className={styles.editor} value={value} onChange={onChange} options={options} />
             <div className={styles.buttons}>
                 <Button onClick={onSubmit} size="large" variant="contained">
-                    Public
+                    {isEditing? 'Save':'Public'} 
                 </Button>
                 <a href="/">
                     <Button size="large">Cancel</Button>
